@@ -1,7 +1,7 @@
 @{
     ModuleVersion        = '4.0.1'
     GUID                 = 'a39e5014-b98f-4df3-ac52-feda586babe8'
-    Author               = 'Jarod Roberts'
+    Author               = 'Jarod Roberts (github.com/Sir-Jigston)'
     CompanyName          = ''
     Copyright            = '(c) 2022 Jarod Roberts. All rights reserved.'
     Description          = 'PowerShell DSC Resource to ensure Windows Desktop Applications are at the desired version using local, UNC, or remote (HTTP/HTTPS) installers.'
@@ -16,7 +16,7 @@
         PSData = @{
             Tags         = 'DesiredStateConfiguration', 'DSC', 'DSCResource'
             LicenseUri   = ''
-            ProjectUri   = ''
+            ProjectUri   = 'https://github.com/AppNetOnline/ans-dsc-pinned'
             ReleaseNotes = @'
 4.0.0
 - Added HTTP/HTTPS installer download support via BITS (with Invoke-WebRequest fallback)
