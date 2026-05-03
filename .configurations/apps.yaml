@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+# Requires the Pinned module to be installed first:
+#   .\Test-PinnedInstall.ps1
+#   -- or --
+#   winget configure --file "https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/.configurations/winget-configure.yaml" --accept-configuration-agreements
+properties:
+  resources:
+    - resource: Pinned/App
+      id: InstallNotepadPlusPlus
+      directives:
+        description: Install Notepad++ at an exact pinned version
+      settings:
+        Ensure: Present
+        Name: Notepad++ (64-bit x64)
+        InstallerPath: https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.6.2/npp.8.6.2.Installer.x64.exe
+        Version: 8.6.2
+        Arguments: /S
+
+  configurationVersion: 0.2.0

@@ -130,6 +130,10 @@ App Chrome {
 | MSP  | `.msp`    | Runs via `msiexec.exe /p` |
 | EXE  | `.exe`    | Runs directly with `Arguments` |
 
+## Author
+
+Jarod Roberts — [@Sir-Jigston](https://github.com/Sir-Jigston)
+
 ## License
 
 Copyright (c) 2022 Jarod Roberts. All rights reserved.
