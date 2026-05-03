@@ -12,16 +12,39 @@ properties:
           @{ Result = if ($mod) { $mod.Version.ToString() } else { '' } }
         TestScript: |
           $mod = Get-Module -ListAvailable -Name Pinned | Sort-Object Version -Descending | Select-Object -First 1
-          $mod -and ($mod.Version -ge [version]'4.0.2')
+          $mod -and ($mod.Version -ge [version]'4.0.3')
         SetScript: |
-          $dest = "$env:ProgramFiles\WindowsPowerShell\Modules\Pinned"
+          $destinations = @(
+              "$env:LOCALAPPDATA\Microsoft\WinGet\Configuration\Modules\Pinned",
+              "$env:ProgramFiles\WindowsPowerShell\Modules\Pinned"
+          )
+
+          function Copy-PinnedModule {
+              param(
+                  [Parameter(Mandatory)]
+                  [string] $Source,
+
+                  [Parameter(Mandatory)]
+                  [string] $Destination
+              )
+
+              if (Test-Path $Destination) { Remove-Item $Destination -Recurse -Force }
+              New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+              $resolvedDestination = (Resolve-Path $Destination).Path.TrimEnd('\')
+              Get-ChildItem $Source -Exclude '.git','*.ps1','*.yaml','*.yml','README.md' |
+                  Where-Object {
+                      $childPath = $_.FullName.TrimEnd('\')
+                      -not $resolvedDestination.StartsWith($childPath + '\', [System.StringComparison]::OrdinalIgnoreCase)
+                  } |
+                  Copy-Item -Destination $Destination -Recurse -Force
+          }
+
           # Try local repo first (when running from a cloned copy); fall back to GitHub download.
           $localRoot = Split-Path $PWD.Path -Parent
           if (Test-Path (Join-Path $localRoot 'Pinned.psd1')) {
-              if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-              New-Item -ItemType Directory -Path $dest -Force | Out-Null
-              Get-ChildItem $localRoot -Exclude '.git','*.ps1','*.yaml','*.yml','README.md' |
-                  Copy-Item -Destination $dest -Recurse -Force
+              foreach ($dest in $destinations) {
+                  Copy-PinnedModule -Source $localRoot -Destination $dest
+              }
           } else {
               $url     = 'https://github.com/AppNetOnline/ans-dsc-pinned/archive/refs/heads/master.zip'
               $tempZip = Join-Path $env:TEMP 'ans-dsc-pinned.zip'
@@ -30,9 +53,9 @@ properties:
               if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
               Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force
               $root = Get-ChildItem $tempDir -Directory | Select-Object -First 1
-              if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-              New-Item -ItemType Directory -Path $dest -Force | Out-Null
-              Get-ChildItem $root.FullName | Copy-Item -Destination $dest -Recurse -Force
+              foreach ($dest in $destinations) {
+                  Copy-PinnedModule -Source $root.FullName -Destination $dest
+              }
               Remove-Item $tempZip, $tempDir -Recurse -Force -ErrorAction SilentlyContinue
           }
 

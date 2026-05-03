@@ -1,5 +1,5 @@
 @{
-    ModuleVersion        = '4.0.2'
+    ModuleVersion        = '4.0.3'
     GUID                 = 'a39e5014-b98f-4df3-ac52-feda586babe8'
     Author               = 'Jarod Roberts (github.com/Sir-Jigston)'
     CompanyName          = ''
@@ -18,6 +18,9 @@
             LicenseUri   = ''
             ProjectUri   = 'https://github.com/AppNetOnline/ans-dsc-pinned'
             ReleaseNotes = @'
+4.0.3
+- Updated winget configuration bootstrap to prefer the local WinGet configuration module path.
+
 4.0.0
 - Added HTTP/HTTPS installer download support via BITS (with Invoke-WebRequest fallback)
 - Fixed version enforcement: Test-TargetResource now requires an exact version match
