@@ -6,6 +6,7 @@
 *.ps1xml
 MOF/
 *.mof
+run.ps1
 
 # Windows
 Thumbs.db
