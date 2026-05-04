@@ -52,7 +52,15 @@ function Get-DscDefaultInstallDirectory {
 }
 
 function Get-DscWindowsAssetPattern {
-    if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+    $architecture = if ($env:PROCESSOR_ARCHITECTURE) {
+        $env:PROCESSOR_ARCHITECTURE
+    } elseif ($env:PROCESSOR_ARCHITEW6432) {
+        $env:PROCESSOR_ARCHITEW6432
+    } else {
+        [System.Reflection.AssemblyName]::GetAssemblyName((Get-Command powershell.exe).Source).ProcessorArchitecture.ToString()
+    }
+
+    if ($architecture -match 'ARM64|AARCH64') {
         return 'aarch64-pc-windows-msvc\.zip$'
     }
 
