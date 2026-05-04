@@ -34,16 +34,57 @@ function Install-PinnedDscV3ResourceFromUrl {
         New-Item -Path $Destination -ItemType Directory -Force | Out-Null
     }
 
-    foreach ($fileName in @('Pinned.App.cmd', 'Pinned.App.ps1', 'Pinned.App.dsc.resource.json')) {
-        $uri = '{0}/{1}' -f $BaseUri.TrimEnd('/'), $fileName
-        $path = Join-Path $Destination $fileName
-        Invoke-WebRequest -Uri $uri -OutFile $path -UseBasicParsing
+    $trimmedBaseUri = $BaseUri.TrimEnd('/')
+    $moduleBaseUri = $trimmedBaseUri -replace '/DSCv3$', ''
 
-        $file = Get-Item -LiteralPath $path -ErrorAction Stop
-        if ($file.Length -eq 0) {
-            throw "Downloaded '$uri' to '$path', but the file is empty."
+    $resourceFiles = @(
+        @{
+            Uri = '{0}/Pinned.App.cmd' -f $trimmedBaseUri
+            Path = Join-Path $Destination 'Pinned.App.cmd'
+        }
+        @{
+            Uri = '{0}/Pinned.App.ps1' -f $trimmedBaseUri
+            Path = Join-Path $Destination 'Pinned.App.ps1'
+        }
+        @{
+            Uri = '{0}/Pinned.App.dsc.resource.json' -f $trimmedBaseUri
+            Path = Join-Path $Destination 'Pinned.App.dsc.resource.json'
+        }
+        @{
+            Uri = '{0}/DSCResources/App/App.psm1' -f $moduleBaseUri
+            Path = Join-Path (Split-Path -Parent $Destination) 'DSCResources\App\App.psm1'
+        }
+    )
+
+    foreach ($file in $resourceFiles) {
+        $folder = Split-Path -Parent $file.Path
+        if (-not (Test-Path -LiteralPath $folder)) {
+            New-Item -Path $folder -ItemType Directory -Force | Out-Null
+        }
+
+        Invoke-WebRequest -Uri $file.Uri -OutFile $file.Path -UseBasicParsing
+
+        $downloadedFile = Get-Item -LiteralPath $file.Path -ErrorAction Stop
+        if ($downloadedFile.Length -eq 0) {
+            throw "Downloaded '$($file.Uri)' to '$($file.Path)', but the file is empty."
         }
     }
+}
+
+function Test-PinnedDscV3ResourcePath {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    foreach ($fileName in @('Pinned.App.cmd', 'Pinned.App.ps1', 'Pinned.App.dsc.resource.json')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $Path $fileName))) {
+            return $false
+        }
+    }
+
+    $moduleFile = Join-Path (Split-Path -Parent $Path) 'DSCResources\App\App.psm1'
+    return (Test-Path -LiteralPath $moduleFile)
 }
 
 if ([string]::IsNullOrWhiteSpace($ResourcePath)) {
@@ -61,8 +102,11 @@ if ([string]::IsNullOrWhiteSpace($ResourcePath)) {
         $ResourcePath = $installedResourcePath
     } else {
         $ResourcePath = Join-Path $env:TEMP 'Pinned.DSCv3'
-        Install-PinnedDscV3ResourceFromUrl -BaseUri $ResourceBaseUri -Destination $ResourcePath
     }
+}
+
+if (-not (Test-PinnedDscV3ResourcePath -Path $ResourcePath)) {
+    Install-PinnedDscV3ResourceFromUrl -BaseUri $ResourceBaseUri -Destination $ResourcePath
 }
 
 $resolvedResourcePath = (Resolve-Path -LiteralPath $ResourcePath).Path
