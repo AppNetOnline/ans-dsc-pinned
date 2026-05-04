@@ -3,6 +3,7 @@
 .claude/todos/
 
 # PowerShell / DSC build artifacts
+dist/
 *.ps1xml
 MOF/
 *.mof

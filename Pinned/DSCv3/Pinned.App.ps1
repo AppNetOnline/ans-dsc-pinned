@@ -1,183 +1,209 @@
 #Requires -Version 5.1
+
 [CmdletBinding()]
-param(
-    [Parameter(Mandatory)]
+Param(
+    [Parameter(Mandatory = $True)]
     [ValidateSet('get', 'set', 'test', 'schema')]
-    [string] $Operation
-)
+    [String] $Operation
+);
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-$ProgressPreference = 'SilentlyContinue'
-$VerbosePreference = 'SilentlyContinue'
-$WarningPreference = 'SilentlyContinue'
-$InformationPreference = 'SilentlyContinue'
+Set-StrictMode -Version Latest;
+$ErrorActionPreference = 'Stop';
+$ProgressPreference = 'SilentlyContinue';
+$VerbosePreference = 'SilentlyContinue';
+$WarningPreference = 'SilentlyContinue';
+$InformationPreference = 'SilentlyContinue';
 
-function Read-JsonInput {
-    $rawInput = [Console]::In.ReadToEnd()
-    if ([string]::IsNullOrWhiteSpace($rawInput)) {
-        return @{}
-    }
+Function ConvertTo-Hashtable {
+    [CmdletBinding()]
+    Param(
+        [Parameter(ValueFromPipeline = $True)]
+        [Object] $InputObject
+    );
 
-    return ConvertTo-Hashtable (ConvertFrom-Json -InputObject $rawInput)
-}
+    Process {
+        If ($Null -eq $InputObject) {
+            Return $Null;
+        };
 
-function ConvertTo-Hashtable {
-    param(
-        [Parameter(ValueFromPipeline)]
-        $InputObject
-    )
+        If ($InputObject -is [System.Collections.IDictionary]) {
+            $Hash = @{};
 
-    process {
-        if ($null -eq $InputObject) {
-            return $null
-        }
+            ForEach ($Key in $InputObject.Keys) {
+                $Hash[$Key] = ConvertTo-Hashtable -InputObject $InputObject[$Key];
+            };
 
-        if ($InputObject -is [System.Collections.IDictionary]) {
-            $hash = @{}
-            foreach ($key in $InputObject.Keys) {
-                $hash[$key] = ConvertTo-Hashtable $InputObject[$key]
-            }
-            return $hash
-        }
+            Return $Hash;
+        };
 
-        if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
-            return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
-        }
-
-        if ($InputObject -is [pscustomobject]) {
-            $hash = @{}
-            foreach ($property in $InputObject.PSObject.Properties) {
-                $hash[$property.Name] = ConvertTo-Hashtable $property.Value
-            }
-            return $hash
-        }
-
-        return $InputObject
-    }
-}
-
-function Write-JsonOutput {
-    param(
-        [Parameter(Mandatory, ValueFromPipeline)]
-        $InputObject
-    )
-
-    process {
-        $InputObject | ConvertTo-Json -Depth 20 -Compress
-    }
-}
-
-function Get-AppSchema {
-    @{
-        '$schema' = 'https://json-schema.org/draft/2020-12/schema'
-        '$id' = 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/Pinned/DSCv3/Pinned.App.schema.json'
-        title = 'Pinned.App'
-        type = 'object'
-        required = @('Name')
-        additionalProperties = $false
-        properties = @{
-            Ensure = @{
-                type = 'string'
-                enum = @('Present', 'Absent')
-                default = 'Present'
-            }
-            Name = @{
-                type = 'string'
-                minLength = 1
-            }
-            InstallerPath = @{
-                type = 'string'
-                default = ''
-            }
-            ProductId = @{ type = 'string' }
-            InstalledCheckFilePath = @{ type = 'string' }
-            InstalledCheckScript = @{ type = 'string' }
-            NoRestart = @{
-                type = 'boolean'
-                default = $false
-            }
-            Arguments = @{ type = 'string' }
-            ArgumentsForUninstall = @{ type = 'string' }
-            WorkingDirectory = @{ type = 'string' }
-            UseUninstallString = @{
-                type = 'boolean'
-                default = $false
-            }
-            ReturnCode = @{
-                type = 'array'
-                items = @{
-                    type = 'integer'
-                    minimum = 0
+        If (($InputObject -is [System.Collections.IEnumerable]) -and ($InputObject -isnot [String])) {
+            Return @(
+                $InputObject | ForEach-Object {
+                    ConvertTo-Hashtable -InputObject $_;
                 }
-                default = @(0, 1641, 3010)
-            }
-            ProcessTimeout = @{
-                type = 'integer'
-                minimum = 0
-                maximum = 2147483
-                default = 2147483
-            }
-            DownloadTimeout = @{
-                type = 'integer'
-                minimum = 0
-                maximum = 2147483647
-                default = 900
-            }
-            Version = @{ type = 'string' }
-            PatchOnly = @{
-                type = 'boolean'
-                default = $false
-            }
-            ForceVersion = @{
-                type = 'boolean'
-                default = $false
-            }
-            UseSemVer = @{
-                type = 'boolean'
-                default = $false
-            }
-            FileHash = @{ type = 'string' }
-            HashAlgorithm = @{
-                type = 'string'
-                enum = @('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160')
-                default = 'SHA256'
-            }
-            PreAction = @{ type = 'string' }
-            PostAction = @{ type = 'string' }
-            PreCopyFrom = @{ type = 'string' }
-            PreCopyTo = @{ type = 'string' }
-            LogLevel = @{
-                type = 'string'
-                enum = @('None', 'Minimal', 'Moderate', 'All')
-                default = 'All'
-            }
-            Publisher = @{ type = 'string' }
-            UninstallString = @{ type = 'string' }
-            Installed = @{ type = 'boolean' }
-            _inDesiredState = @{ type = 'boolean' }
-        }
-    }
-}
+            );
+        };
 
-function Get-AppModulePath {
-    $modulePath = Join-Path $PSScriptRoot '..\DSCResources\App\App.psm1'
-    return (Resolve-Path -LiteralPath $modulePath).Path
-}
+        If ($InputObject -is [PSCustomObject]) {
+            $Hash = @{};
 
-function Import-AppResource {
-    Import-Module (Get-AppModulePath) -Force -ErrorAction Stop
-}
+            ForEach ($Property in $InputObject.PSObject.Properties) {
+                $Hash[$Property.Name] = ConvertTo-Hashtable -InputObject $Property.Value;
+            };
 
-function Get-ResourceParameters {
-    param(
-        [Parameter(Mandatory)]
-        [hashtable] $InputObject,
+            Return $Hash;
+        };
 
-        [switch] $ForGet
-    )
+        Return $InputObject;
+    };
+};
 
-    $parameterNames = @(
+Function Read-JsonInput {
+    [CmdletBinding()]
+    Param();
+
+    $RawInput = [Console]::In.ReadToEnd();
+
+    If ([String]::IsNullOrWhiteSpace($RawInput)) {
+        Return @{};
+    };
+
+    Return ConvertTo-Hashtable -InputObject (ConvertFrom-Json -InputObject $RawInput);
+};
+
+Function Write-JsonOutput {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+        [Object] $InputObject
+    );
+
+    Process {
+        $InputObject | ConvertTo-Json -Depth 20 -Compress;
+    };
+};
+
+Function Get-AppSchema {
+    [CmdletBinding()]
+    Param();
+
+    Return @{
+        '$schema'            = 'https://json-schema.org/draft/2020-12/schema';
+        '$id'                = 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/Pinned/DSCv3/Pinned.App.schema.json';
+        title                = 'Pinned.App';
+        type                 = 'object';
+        required             = @('Name');
+        additionalProperties = $False;
+        properties           = @{
+            Ensure                 = @{
+                type    = 'string';
+                enum    = @('Present', 'Absent');
+                default = 'Present';
+            };
+            Name                   = @{
+                type      = 'string';
+                minLength = 1;
+            };
+            InstallerPath          = @{
+                type    = 'string';
+                default = '';
+            };
+            ProductId              = @{ type = 'string'; };
+            InstalledCheckFilePath = @{ type = 'string'; };
+            InstalledCheckScript   = @{ type = 'string'; };
+            NoRestart              = @{
+                type    = 'boolean';
+                default = $False;
+            };
+            Arguments              = @{ type = 'string'; };
+            ArgumentsForUninstall  = @{ type = 'string'; };
+            WorkingDirectory       = @{ type = 'string'; };
+            UseUninstallString     = @{
+                type    = 'boolean';
+                default = $False;
+            };
+            ReturnCode             = @{
+                type    = 'array';
+                items   = @{
+                    type    = 'integer';
+                    minimum = 0;
+                };
+                default = @(0, 1641, 3010);
+            };
+            ProcessTimeout         = @{
+                type    = 'integer';
+                minimum = 0;
+                maximum = 2147483;
+                default = 2147483;
+            };
+            DownloadTimeout        = @{
+                type    = 'integer';
+                minimum = 0;
+                maximum = 2147483647;
+                default = 900;
+            };
+            Version                = @{ type = 'string'; };
+            PatchOnly              = @{
+                type    = 'boolean';
+                default = $False;
+            };
+            ForceVersion           = @{
+                type    = 'boolean';
+                default = $False;
+            };
+            UseSemVer              = @{
+                type    = 'boolean';
+                default = $False;
+            };
+            FileHash               = @{ type = 'string'; };
+            HashAlgorithm          = @{
+                type    = 'string';
+                enum    = @('SHA1', 'SHA256', 'SHA384', 'SHA512', 'MD5', 'RIPEMD160');
+                default = 'SHA256';
+            };
+            PreAction              = @{ type = 'string'; };
+            PostAction             = @{ type = 'string'; };
+            PreCopyFrom            = @{ type = 'string'; };
+            PreCopyTo              = @{ type = 'string'; };
+            LogLevel               = @{
+                type    = 'string';
+                enum    = @('None', 'Minimal', 'Moderate', 'All');
+                default = 'All';
+            };
+            Publisher              = @{ type = 'string'; };
+            UninstallString        = @{ type = 'string'; };
+            Installed              = @{ type = 'boolean'; };
+            _inDesiredState        = @{ type = 'boolean'; };
+        };
+    };
+};
+
+Function Get-AppModulePath {
+    [CmdletBinding()]
+    Param();
+
+    $ModulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\DSCResources\App\App.psm1';
+
+    Return (Resolve-Path -LiteralPath $ModulePath).Path;
+};
+
+Function Import-AppResource {
+    [CmdletBinding()]
+    Param();
+
+    Import-Module -Name (Get-AppModulePath) -Force -ErrorAction Stop;
+};
+
+Function Get-ResourceParameters {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $True)]
+        [Hashtable] $InputObject,
+
+        [Switch] $ForGet
+    );
+
+    $ParameterNames = @(
         'Ensure',
         'Name',
         'InstallerPath',
@@ -203,10 +229,10 @@ function Get-ResourceParameters {
         'PreCopyFrom',
         'PreCopyTo',
         'LogLevel'
-    )
+    );
 
-    if ($ForGet) {
-        $parameterNames = @(
+    If ($ForGet) {
+        $ParameterNames = @(
             'Ensure',
             'Name',
             'InstallerPath',
@@ -214,101 +240,111 @@ function Get-ResourceParameters {
             'Version',
             'InstalledCheckFilePath',
             'LogLevel'
-        )
-    }
+        );
+    };
 
-    $parameters = @{}
-    foreach ($name in $parameterNames) {
-        if ($InputObject.ContainsKey($name) -and $null -ne $InputObject[$name]) {
-            $parameters[$name] = $InputObject[$name]
-        }
-    }
+    $Parameters = @{};
 
-    if (-not $parameters.ContainsKey('Ensure')) {
-        $parameters.Ensure = 'Present'
-    }
+    ForEach ($Name in $ParameterNames) {
+        If (($InputObject.ContainsKey($Name)) -and ($Null -ne $InputObject[$Name])) {
+            $Parameters[$Name] = $InputObject[$Name];
+        };
+    };
 
-    if (-not $parameters.ContainsKey('InstallerPath')) {
-        $parameters.InstallerPath = ''
-    }
+    If (-not $Parameters.ContainsKey('Ensure')) {
+        $Parameters.Ensure = 'Present';
+    };
 
-    return $parameters
-}
+    If (-not $Parameters.ContainsKey('InstallerPath')) {
+        $Parameters.InstallerPath = '';
+    };
 
-function Get-NormalizedState {
-    param(
-        [Parameter(Mandatory)]
-        [hashtable] $InputObject
-    )
+    Return $Parameters;
+};
 
-    Import-AppResource
+Function Get-NormalizedState {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $True)]
+        [Hashtable] $InputObject
+    );
 
-    $parameters = Get-ResourceParameters -InputObject $InputObject -ForGet
-    $state = Get-TargetResource @parameters
-    $state = ConvertTo-Hashtable $state
+    Import-AppResource;
 
-    if ($state.ContainsKey('Ensure') -and $null -ne $state.Ensure) {
-        $state.Ensure = $state.Ensure.ToString()
-    }
+    $Parameters = Get-ResourceParameters -InputObject $InputObject -ForGet;
+    $State = Get-TargetResource @Parameters;
+    $State = ConvertTo-Hashtable -InputObject $State;
 
-    if ($InputObject.ContainsKey('Name') -and [string]::IsNullOrWhiteSpace([string]$state.Name)) {
-        $state.Name = $InputObject.Name
-    }
+    If (($State.ContainsKey('Ensure')) -and ($Null -ne $State.Ensure)) {
+        $State.Ensure = $State.Ensure.ToString();
+    };
 
-    foreach ($propertyName in @('InstallerPath', 'ProductId', 'Version')) {
-        if ($InputObject.ContainsKey($propertyName) -and (-not $state.ContainsKey($propertyName) -or $null -eq $state[$propertyName])) {
-            $state[$propertyName] = $InputObject[$propertyName]
-        }
-    }
+    If (($InputObject.ContainsKey('Name')) -and ([String]::IsNullOrWhiteSpace([String] $State.Name))) {
+        $State.Name = $InputObject.Name;
+    };
 
-    return $state
-}
+    ForEach ($PropertyName in @('InstallerPath', 'ProductId', 'Version')) {
+        If (($InputObject.ContainsKey($PropertyName)) -and ((-not $State.ContainsKey($PropertyName)) -or ($Null -eq $State[$PropertyName]))) {
+            $State[$PropertyName] = $InputObject[$PropertyName];
+        };
+    };
 
-function Test-NormalizedState {
-    param(
-        [Parameter(Mandatory)]
-        [hashtable] $InputObject
-    )
+    Return $State;
+};
 
-    Import-AppResource
-    $parameters = Get-ResourceParameters -InputObject $InputObject
-    return [bool](Test-TargetResource @parameters)
-}
+Function Test-NormalizedState {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $True)]
+        [Hashtable] $InputObject
+    );
 
-function Set-NormalizedState {
-    param(
-        [Parameter(Mandatory)]
-        [hashtable] $InputObject
-    )
+    Import-AppResource;
 
-    Import-AppResource
-    $parameters = Get-ResourceParameters -InputObject $InputObject
+    $Parameters = Get-ResourceParameters -InputObject $InputObject;
 
-    if (-not (Test-TargetResource @parameters)) {
-        Set-TargetResource @parameters
-    }
+    Return [Boolean] (Test-TargetResource @Parameters);
+};
 
-    return Get-NormalizedState -InputObject $InputObject
-}
+Function Set-NormalizedState {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $True)]
+        [Hashtable] $InputObject
+    );
 
-switch ($Operation) {
+    Import-AppResource;
+
+    $Parameters = Get-ResourceParameters -InputObject $InputObject;
+
+    If (-not (Test-TargetResource @Parameters)) {
+        Set-TargetResource @Parameters;
+    };
+
+    Return Get-NormalizedState -InputObject $InputObject;
+};
+
+Switch ($Operation) {
     'schema' {
-        Get-AppSchema | Write-JsonOutput
-        break
-    }
+        Get-AppSchema | Write-JsonOutput;
+        Break;
+    };
+
     'get' {
-        Get-NormalizedState -InputObject (Read-JsonInput) | Write-JsonOutput
-        break
-    }
+        Get-NormalizedState -InputObject (Read-JsonInput) | Write-JsonOutput;
+        Break;
+    };
+
     'test' {
-        $inputObject = Read-JsonInput
-        $state = Get-NormalizedState -InputObject $inputObject
-        $state._inDesiredState = Test-NormalizedState -InputObject $inputObject
-        $state | Write-JsonOutput
-        break
-    }
+        $InputObject = Read-JsonInput;
+        $State = Get-NormalizedState -InputObject $InputObject;
+        $State._inDesiredState = Test-NormalizedState -InputObject $InputObject;
+        $State | Write-JsonOutput;
+        Break;
+    };
+
     'set' {
-        Set-NormalizedState -InputObject (Read-JsonInput) | Write-JsonOutput
-        break
-    }
-}
+        Set-NormalizedState -InputObject (Read-JsonInput) | Write-JsonOutput;
+        Break;
+    };
+};
