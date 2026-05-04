@@ -56,19 +56,28 @@ The PowerShell module lives in [`Pinned/`](Pinned/). Repository-level files such
 
 ## DSC v3
 
-This repository also includes a command-based DSC v3 resource at [`Pinned/DSCv3`](Pinned/DSCv3). Add that folder to `PATH` so `dsc` can discover `Pinned.App.dsc.resource.json`:
+This repository also includes a command-based DSC v3 resource at [`Pinned/DSCv3`](Pinned/DSCv3). For release installs, use the generic bootstrap. It installs standalone DSC v3 if needed, downloads the `Pinned.DSCv3.zip` release package, sets `DSC_RESOURCE_PATH`, and can apply a configuration from a URL.
 
 ```powershell
-$env:PATH = "$(Resolve-Path .\Pinned\DSCv3);$env:PATH"
-dsc resource list AppNetOnline.Pinned/App
+irm "https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedDscV3.ps1" | iex
 ```
 
-Example:
+Apply the Firefox DSC v3 example in one line:
 
 ```powershell
-dsc resource set `
-  --resource AppNetOnline.Pinned/App `
-  --input '{"Name":"Notepad++ (64-bit x64)","InstallerPath":"https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.4/npp.8.9.4.Installer.x64.exe","Version":"8.9.4","Arguments":"/S","Ensure":"Present"}'
+irm "https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Invoke-DscV3Firefox.ps1" | iex
+```
+
+Apply any DSC v3 YAML configuration URL:
+
+```powershell
+iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedDscV3.ps1') } -ConfigurationUri 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/.configurations/firefox-dscv3.yaml'"
+```
+
+Build the release package locally:
+
+```powershell
+.\Build-DscV3Release.ps1
 ```
 
 ## Usage
