@@ -21,8 +21,11 @@
             ProjectUri   = 'https://github.com/AppNetOnline/ans-dsc-pinned'
             ReleaseNotes = @'
 4.0.6
-- Added Set-PinnedApp module command for friendly install, update, and uninstall actions
-- Added parameter-driven DSC v3 app bootstrap
+- Added Set-PinnedApp as a friendly module command for installing, updating, and uninstalling pinned applications without authoring DSC configuration YAML.
+- Added Action-based app operations: Install, Update, and Uninstall.
+- Added Install-PinnedAppDscV3.ps1 bootstrap for generating DSC v3 app configurations from parameters.
+- Added ConfigurationPath support to Install-PinnedDscV3.ps1 so generated local configs can be applied by the existing bootstrap.
+- Updated DSC v3 resource metadata and release package version to 4.0.6.
 
 4.0.5
 Fixed error propagation from Set-TargetResource
