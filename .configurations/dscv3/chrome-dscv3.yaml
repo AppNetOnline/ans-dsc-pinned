@@ -1,0 +1,11 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: InstallChrome
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: Google Chrome
+      InstallerPath: https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi
+      Version: 136.0.7103.92
+      Arguments: /quiet /norestart
+      PatchOnly: true
