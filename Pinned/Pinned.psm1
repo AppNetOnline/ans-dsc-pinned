@@ -27,6 +27,98 @@ Function Import-PinnedAppResource {
     Import-Module -Name $resourceModulePath -Force -ErrorAction Stop
 };
 
+Function New-PinnedAppResult {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)]
+        [String]
+        $Action,
+
+        [Parameter(Mandatory)]
+        [String]
+        $Name,
+
+        [Parameter(Mandatory)]
+        [String]
+        $DesiredEnsure,
+
+        [Parameter(Mandatory)]
+        [String]
+        $DesiredVersion,
+
+        [Parameter(Mandatory)]
+        [Boolean]
+        $PatchOnly,
+
+        [Parameter(Mandatory)]
+        [Boolean]
+        $WasInDesiredState,
+
+        [Parameter(Mandatory)]
+        [Boolean]
+        $IsInDesiredState,
+
+        [Parameter(Mandatory)]
+        [Hashtable]
+        $State
+    )
+
+    $installed = If ($State.ContainsKey('Installed')) {
+        [Boolean]$State.Installed
+    }
+    Else {
+        $State.Ensure -eq 'Present'
+    };
+
+    $currentVersion = If ($State.ContainsKey('Version') -and $Null -ne $State.Version) {
+        [String]$State.Version
+    }
+    Else {
+        ''
+    };
+
+    $displayName = If ($State.ContainsKey('Name') -and -not [String]::IsNullOrWhiteSpace([String]$State.Name)) {
+        [String]$State.Name
+    }
+    Else {
+        $Name
+    };
+
+    $status = If ($WasInDesiredState) {
+        If ($PatchOnly -and -not $installed) {
+            'Skipped'
+        }
+        Else {
+            'AlreadyInDesiredState'
+        }
+    }
+    ElseIf ($IsInDesiredState) {
+        'Changed'
+    }
+    Else {
+        'NotInDesiredState'
+    };
+
+    [PSCustomObject]@{
+        PSTypeName            = 'Pinned.App.Result'
+        Name                  = $displayName
+        Action                = $Action
+        Status                = $status
+        Changed               = (-not $WasInDesiredState) -and $IsInDesiredState
+        WasInDesiredState     = $WasInDesiredState
+        IsInDesiredState      = $IsInDesiredState
+        DesiredEnsure         = $DesiredEnsure
+        CurrentEnsure         = [String]$State.Ensure
+        DesiredVersion        = $DesiredVersion
+        CurrentVersion        = $currentVersion
+        Installed             = $installed
+        PatchOnly             = $PatchOnly
+        ProductId             = If ($State.ContainsKey('ProductId')) { [String]$State.ProductId } Else { '' }
+        Publisher             = If ($State.ContainsKey('Publisher')) { [String]$State.Publisher } Else { '' }
+        UninstallString       = If ($State.ContainsKey('UninstallString')) { [String]$State.UninstallString } Else { '' }
+    }
+};
+
 Function Set-PinnedApp {
     <#
     .SYNOPSIS
@@ -78,19 +170,29 @@ Function Set-PinnedApp {
         $resourceParameters.ArgumentsForUninstall = $Arguments
     };
 
-    If (-not $PSCmdlet.ShouldProcess($Name, $Action)) {
-        Return
-    };
+    $wasInDesiredState = Test-TargetResource @resourceParameters
 
-    If (-not (Test-TargetResource @resourceParameters)) {
+    If ((-not $wasInDesiredState) -and $PSCmdlet.ShouldProcess($Name, $Action)) {
         Set-TargetResource @resourceParameters
     };
 
-    Get-TargetResource `
+    $state = Get-TargetResource `
         -Ensure $ensure `
         -Name $Name `
         -InstallerPath $InstallerUri `
         -Version $Version
+
+    $isInDesiredState = Test-TargetResource @resourceParameters
+
+    New-PinnedAppResult `
+        -Action $Action `
+        -Name $Name `
+        -DesiredEnsure $ensure `
+        -DesiredVersion $Version `
+        -PatchOnly ($Action -eq 'Update') `
+        -WasInDesiredState $wasInDesiredState `
+        -IsInDesiredState $isInDesiredState `
+        -State $state
 };
 
 Export-ModuleMember -Function Set-PinnedApp
