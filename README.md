@@ -337,4 +337,4 @@ Jarod Roberts — [@Sir-Jigston](https://github.com/Sir-Jigston)
 
 ## License
 
-Copyright (c) 2022 Jarod Roberts. All rights reserved.
+Copyright (c) 2026 Jarod Roberts. All rights reserved.
