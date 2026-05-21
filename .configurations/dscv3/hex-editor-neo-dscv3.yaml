@@ -7,5 +7,5 @@ resources:
       Name: Free Hex Editor Neo
       InstallerPath: https://hhdsoftware.com/download/free-hex-editor-neo.exe
       Version: "8.5.0.9372"
-      Arguments: /verysilent /suppressmsgboxes /norestart
+      Arguments: -silent -machine
       PatchOnly: false
