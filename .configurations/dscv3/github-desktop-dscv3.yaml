@@ -5,7 +5,7 @@ resources:
     properties:
       Ensure: Present
       Name: GitHub Desktop
-      InstallerPath: https://central.github.com/deployments/desktop/desktop/latest/win32?format=msi
+      InstallerPath: https://desktop.githubusercontent.com/releases/3.5.9-370cc108/GitHubDesktopSetup-x64.msi
       Version: Latest
       Arguments: /qn /norestart
       PatchOnly: false

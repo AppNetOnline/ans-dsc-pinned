@@ -209,16 +209,32 @@ Function Test-DscExecutable {
     }
 };
 
+Function Test-DscWindowsAppsAlias {
+    Param(
+        [string]
+        $Path
+    )
+
+    Return ($Path -and $Path -like (Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\*'))
+};
+
 Function Resolve-DscPath {
-    $command = Get-Command dsc -ErrorAction SilentlyContinue
-    If ($command -and (Test-DscExecutable -Path $command.Source)) {
-        Return $command.Source
+    Param(
+        [Parameter(Mandatory)]
+        [string]
+        $InstallDirectory
+    )
+
+    $installedPath = Join-Path $InstallDirectory 'dsc.exe'
+    If (Test-DscExecutable -Path $installedPath) {
+        Add-DirectoryToPath -Path $InstallDirectory -Target Process
+        Return $installedPath
     };
 
-    $defaultPath = Join-Path (Get-DefaultDscInstallDirectory -Scope $Scope) 'dsc.exe'
-    If (Test-DscExecutable -Path $defaultPath) {
-        Add-DirectoryToPath -Path (Split-Path -Parent $defaultPath) -Target Process
-        Return $defaultPath
+    $command = Get-Command dsc -ErrorAction SilentlyContinue
+    If ($command -and -not (Test-DscWindowsAppsAlias -Path $command.Source) -and (Test-DscExecutable -Path $command.Source)) {
+        Add-DirectoryToPath -Path (Split-Path -Parent $command.Source) -Target Process
+        Return $command.Source
     };
 
     Return $null
@@ -286,7 +302,7 @@ If (-not $ResourceInstallDirectory) {
     $ResourceInstallDirectory = Get-DefaultPinnedResourceDirectory -Scope $Scope
 };
 
-$dscPath = Resolve-DscPath
+$dscPath = Resolve-DscPath -InstallDirectory $DscInstallDirectory
 If (-not $dscPath) {
     If ($SkipDscInstall) {
         throw 'dsc.exe was not found and -SkipDscInstall was specified.'
