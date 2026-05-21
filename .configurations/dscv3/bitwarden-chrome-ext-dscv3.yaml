@@ -1,7 +1,19 @@
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
+  - name: InstallChrome
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: Google Chrome
+      InstallerPath: https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi
+      Version: "148.0.7778.97"
+      Arguments: /quiet /norestart
+      PatchOnly: true
+
   - name: ForceInstallChromeBitwardenExtension
     type: Microsoft.Windows/Registry
+    dependsOn:
+      - "[resourceId('AppNetOnline.Pinned/App','InstallChrome')]"
     properties:
       _exist: true
       keyPath: HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist
