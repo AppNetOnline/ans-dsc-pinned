@@ -8,7 +8,7 @@ resources:
       InstallerPath: https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi
       Version: "148.0.7778.179"
       Arguments: /quiet /norestart
-      PatchOnly: true
+      PatchOnly: false
 
   - name: ForceInstallChromeBitwardenExtension
     type: Microsoft.Windows/Registry
