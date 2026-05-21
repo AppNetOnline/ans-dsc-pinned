@@ -357,7 +357,10 @@ If (-not $dscPath) {
 Repair-DscSettingsFile -DscPath $dscPath
 
 $resourcePath = Install-PinnedDscV3Resource -PackageUri $ResourcePackageUri -PackagePath $ResourcePackagePath -InstallDirectory $ResourceInstallDirectory
-$env:DSC_RESOURCE_PATH = $resourcePath
+$env:DSC_RESOURCE_PATH = @(
+    $resourcePath
+    Split-Path -Parent $dscPath
+) -join [System.IO.Path]::PathSeparator
 
 Write-Host "==> Installed Pinned DSC v3 resource: $resourcePath"
 & $dscPath resource list AppNetOnline.Pinned/App
