@@ -5,7 +5,7 @@ resources:
     properties:
       Ensure: Present
       Name: ExamDiff
-      InstallerPath: https://www.prestosoft.com/pub/ed19i.exe
+      InstallerPath: https://www.prestosoft.com/download/ed194_setup.exe
       Version: 1.9.4
       Arguments: /VERYSILENT /NORESTART
       PatchOnly: false
