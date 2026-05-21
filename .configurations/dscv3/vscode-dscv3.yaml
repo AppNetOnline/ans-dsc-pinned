@@ -1,0 +1,11 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: InstallVisualStudioCode
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: Microsoft Visual Studio Code
+      InstallerPath: https://update.code.visualstudio.com/latest/win32-x64/stable
+      Version: Latest
+      Arguments: /VERYSILENT /NORESTART /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath
+      PatchOnly: false

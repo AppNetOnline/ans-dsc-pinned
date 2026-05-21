@@ -1,0 +1,11 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: InstallExamDiff
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: ExamDiff
+      InstallerPath: https://www.prestosoft.com/pub/ed19i.exe
+      Version: 1.9.4
+      Arguments: /VERYSILENT /NORESTART
+      PatchOnly: false

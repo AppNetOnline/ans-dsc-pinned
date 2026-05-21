@@ -1,0 +1,11 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: InstallOllama
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: Ollama
+      InstallerPath: https://ollama.com/download/OllamaSetup.exe
+      Version: Latest
+      Arguments: /S
+      PatchOnly: false

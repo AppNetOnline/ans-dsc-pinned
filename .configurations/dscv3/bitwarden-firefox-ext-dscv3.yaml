@@ -1,0 +1,10 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: ForceInstallFirefoxBitwardenExtension
+    type: Microsoft.Windows/Registry
+    properties:
+      _exist: true
+      keyPath: HKLM\SOFTWARE\Policies\Mozilla\Firefox\Extensions\Install
+      valueName: "1"
+      valueData:
+        String: https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi

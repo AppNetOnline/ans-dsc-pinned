@@ -1,9 +1,9 @@
 # Pinned
 
-[![Version](https://img.shields.io/badge/version-4.1.0-blue?style=flat-square)](https://github.com/AppNetOnline/ans-dsc-pinned/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/AppNetOnline/ans-dsc-pinned)
+[![Version](https://img.shields.io/badge/version-4.1.0-blue?style=flat-square)](https://github.com/AppNetDev/ans-dsc-pinned/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/AppNetDev/ans-dsc-pinned)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
-[![License](https://img.shields.io/badge/license-Proprietary-red?style=flat-square)](https://github.com/AppNetOnline/ans-dsc-pinned)
+[![License](https://img.shields.io/badge/license-Proprietary-red?style=flat-square)](https://github.com/AppNetDev/ans-dsc-pinned)
 
 **Install Windows applications that WinGet can't. Built for RMM tools, SYSTEM context, and exact version enforcement.**
 
@@ -56,23 +56,23 @@ DSC v3 is purpose-built for unattended, SYSTEM-context deployment. It has no dep
 Download and install `dsc.exe` and the Pinned resource in a single step:
 
 ```powershell
-irm "https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1" | iex
+irm "https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1" | iex
 ```
 
 Or install and immediately apply a configuration:
 
 ```powershell
-iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ConfigurationUri 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/.configurations/dscv3/firefox-dscv3.yaml'"
+iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ConfigurationUri 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/.configurations/dscv3/firefox-dscv3.yaml'"
 ```
 
 Additional install options:
 
 ```powershell
 # Install for all users and persist dsc.exe on PATH
-iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -Scope AllUsers -PersistDscPath"
+iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -Scope AllUsers -PersistDscPath"
 
 # Pin to a specific release
-iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ResourcePackageUri 'https://github.com/AppNetOnline/ans-dsc-pinned/releases/download/v4.0.6-dscv3/Pinned.DSCv3.4.0.6.zip'"
+iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ResourcePackageUri 'https://github.com/AppNetDev/ans-dsc-pinned/releases/download/v4.0.6-dscv3/Pinned.DSCv3.4.0.6.zip'"
 ```
 
 Default install locations:
@@ -124,7 +124,7 @@ Installs the Pinned module and applies your configuration in one step:
 ```powershell
 $wingetArgs = @(
     'configure'
-    '--file', 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/.configurations/classic/winget-configure.yaml'
+    '--file', 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/.configurations/classic/winget-configure.yaml'
     '--accept-configuration-agreements'
     '--ignore-warnings'
 )
@@ -135,16 +135,16 @@ Customise which applications are installed by editing [`.configurations/classic/
 
 **Option 2 — NuGet package**
 
-Published to the [AppNetOnline GitHub Packages](https://github.com/orgs/AppNetOnline/packages) feed. Requires a GitHub PAT with `read:packages` scope — contact [@Sir-Jigston](https://github.com/Sir-Jigston) to request access.
+Published to the [AppNetDev GitHub Packages](https://github.com/orgs/AppNetDev/packages) feed. Requires a GitHub PAT with `read:packages` scope — contact [@Sir-Jigston](https://github.com/Sir-Jigston) to request access.
 
 ```powershell
 $Cred = Get-Credential -UserName 'your-github-username' -Message 'Enter your read:packages PAT as the password'
 
-Register-PSResourceRepository -Name 'AppNetOnline' `
-    -Uri 'https://nuget.pkg.github.com/AppNetOnline/index.json' `
+Register-PSResourceRepository -Name 'AppNetDev' `
+    -Uri 'https://nuget.pkg.github.com/AppNetDev/index.json' `
     -Trusted
 
-Install-PSResource -Name Pinned -Repository 'AppNetOnline' -Credential $Cred -TrustRepository
+Install-PSResource -Name Pinned -Repository 'AppNetDev' -Credential $Cred -TrustRepository
 ```
 
 **Option 3 — Manual**

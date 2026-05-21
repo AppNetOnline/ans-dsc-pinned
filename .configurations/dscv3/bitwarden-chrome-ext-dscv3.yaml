@@ -1,0 +1,10 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: ForceInstallChromeBitwardenExtension
+    type: Microsoft.Windows/Registry
+    properties:
+      _exist: true
+      keyPath: HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist
+      valueName: "1"
+      valueData:
+        String: nngceckbapebfimnlniiiahkandclblb;https://clients2.google.com/service/update2/crx

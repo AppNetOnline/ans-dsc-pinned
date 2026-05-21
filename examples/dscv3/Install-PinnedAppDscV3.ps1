@@ -3,9 +3,9 @@
 .SYNOPSIS
     Builds a Pinned app DSC v3 configuration from parameters and applies it.
 .EXAMPLE
-    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedAppDscV3.ps1') } -Action Install -Name 'Notepad++ (64-bit x64)' -InstallerUri 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.4/npp.8.9.4.Installer.x64.exe' -Version '8.9.4' -Arguments '/S'"
+    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedAppDscV3.ps1') } -Action Install -Name 'Notepad++ (64-bit x64)' -InstallerUri 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.4/npp.8.9.4.Installer.x64.exe' -Version '8.9.4' -Arguments '/S'"
 .EXAMPLE
-    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedAppDscV3.ps1') } -Action Uninstall -Name 'Notepad++ (64-bit x64)' -InstallerUri 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.4/npp.8.9.4.Installer.x64.exe' -Version '8.9.4' -Arguments '/S'"
+    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedAppDscV3.ps1') } -Action Uninstall -Name 'Notepad++ (64-bit x64)' -InstallerUri 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.4/npp.8.9.4.Installer.x64.exe' -Version '8.9.4' -Arguments '/S'"
 #>
 [CmdletBinding()]
 param(
@@ -26,9 +26,9 @@ param(
 
     [string] $ResourceName = 'InstallPinnedApp',
 
-    [string] $BootstrapUri = 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedDscV3.ps1',
+    [string] $BootstrapUri = 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/feature/dsc-v3-resource/examples/Install-PinnedDscV3.ps1',
 
-    [string] $ResourcePackageUri = 'https://github.com/AppNetOnline/ans-dsc-pinned/releases/download/v4.0.6-dscv3/Pinned.DSCv3.4.0.6.zip',
+    [string] $ResourcePackageUri = 'https://github.com/AppNetDev/ans-dsc-pinned/releases/download/v4.0.6-dscv3/Pinned.DSCv3.4.0.6.zip',
 
     [string] $ResourcePackagePath,
 
@@ -82,7 +82,7 @@ $lines = @(
     '$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json',
     'resources:',
     ('  - name: {0}' -f $ResourceName),
-    '    type: AppNetOnline.Pinned/App',
+    '    type: AppNetDev.Pinned/App',
     '    properties:',
     ('      Ensure: {0}' -f $dscEnsure),
     ('      Name: {0}' -f (ConvertTo-YamlScalar -Value $Name)),

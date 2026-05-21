@@ -7,9 +7,9 @@
     zip, extracts it to a predictable resource directory, sets DSC_RESOURCE_PATH
     for the current process, and can apply a remote YAML configuration.
 .EXAMPLE
-    irm "https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1" | iex
+    irm "https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1" | iex
 .EXAMPLE
-    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ConfigurationUri 'https://raw.githubusercontent.com/AppNetOnline/ans-dsc-pinned/master/.configurations/dscv3/firefox-dscv3.yaml'"
+    iex "& { $(irm 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/examples/dscv3/Install-PinnedDscV3.ps1') } -ConfigurationUri 'https://raw.githubusercontent.com/AppNetDev/ans-dsc-pinned/master/.configurations/dscv3/firefox-dscv3.yaml'"
 #>
 [CmdletBinding()]
 param(
@@ -20,7 +20,7 @@ param(
 
     [string] $DscInstallDirectory,
 
-    [string] $ResourcePackageUri = 'https://github.com/AppNetOnline/ans-dsc-pinned/releases/latest/download/Pinned.DSCv3.zip',
+    [string] $ResourcePackageUri = 'https://github.com/AppNetDev/ans-dsc-pinned/releases/latest/download/Pinned.DSCv3.zip',
 
     [string] $ResourcePackagePath,
 
@@ -64,10 +64,10 @@ Function Get-DefaultPinnedResourceDirectory {
     )
 
     If ($Scope -eq 'AllUsers') {
-        Return Join-Path $env:ProgramFiles 'DSC\Resources\AppNetOnline.Pinned'
+        Return Join-Path $env:ProgramFiles 'DSC\Resources\AppNetDev.Pinned'
     };
 
-    Return Join-Path $env:LOCALAPPDATA 'Microsoft\DSC\Resources\AppNetOnline.Pinned'
+    Return Join-Path $env:LOCALAPPDATA 'Microsoft\DSC\Resources\AppNetDev.Pinned'
 };
 
 Function Get-DscWindowsAssetPattern {
@@ -254,9 +254,9 @@ Function Install-PinnedDscV3Resource {
     Write-Host "==> Extracting Pinned DSC v3 resource"
     Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
 
-    $packageRoot = Join-Path $extractPath 'AppNetOnline.Pinned'
+    $packageRoot = Join-Path $extractPath 'AppNetDev.Pinned'
     If (-not (Test-Path -LiteralPath $packageRoot)) {
-        throw "The package '$PackageUri' did not contain an AppNetOnline.Pinned folder."
+        throw "The package '$PackageUri' did not contain an AppNetDev.Pinned folder."
     };
 
     If (Test-Path -LiteralPath $InstallDirectory) {
@@ -299,7 +299,7 @@ $resourcePath = Install-PinnedDscV3Resource -PackageUri $ResourcePackageUri -Pac
 $env:DSC_RESOURCE_PATH = $resourcePath
 
 Write-Host "==> Installed Pinned DSC v3 resource: $resourcePath"
-& $dscPath resource list AppNetOnline.Pinned/App
+& $dscPath resource list AppNetDev.Pinned/App
 
 If ($ConfigurationUri) {
     Write-Host "==> Downloading configuration"

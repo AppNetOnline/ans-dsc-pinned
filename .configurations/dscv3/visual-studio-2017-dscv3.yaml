@@ -1,0 +1,11 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: InstallVisualStudio2017
+    type: AppNetOnline.Pinned/App
+    properties:
+      Ensure: Present
+      Name: Visual Studio 2017
+      InstallerPath: C:\ANS\Installers\VisualStudio2017\vs_enterprise.exe
+      Version: 15.9
+      Arguments: --quiet --wait --norestart --nocache --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
+      PatchOnly: false
